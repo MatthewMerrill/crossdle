@@ -122,7 +122,7 @@ function App() {
       setStageByGame(Array(5).fill(''));
       localStorage['prevAnswer'] = answers.main;
     }
-  },[answers]);
+  },[answers, setCurGameIdx, setGuessesByGame, setStageByGame]);
 
   // useEffect(() => {
   //   if (answers.main === '') {
@@ -256,7 +256,7 @@ function App() {
   let txtInput = null;
   useEffect(() => {
     txtInput.focus();
-  }, [curGameIdx]);
+  }, [curGameIdx, txtInput]);
 
   return (
       <div className="App" onKeyDown={onKey} tabIndex={-1} ref={(r) => txtInput = r}>
