@@ -46,9 +46,6 @@ function Row({content, answer}) {
 }
 
 function Game({answer, guesses, stage}) {
-  // let [guesses, setGuesses] = useState([])
-  // console.log(answer)
-
   return (
       <div className="Game">
         {guesses.map((guess, idx) => <Row key={idx} answer={answer} content={guess}/>)}
@@ -93,6 +90,31 @@ function useStickyState(defaultValue, key) {
   return [value, setValue];
 }
 
+function CountdownTimer({text='', target}) {
+  function getTimeString() {
+    let delta = target - new Date();
+    if (delta < 0) {
+      delta = 0;
+    }
+    delta = Math.floor(delta / 1000)
+    let seconds = delta % 60;
+    delta = Math.floor(delta / 60);
+    let minutes = delta % 60;
+    delta = Math.floor(delta / 60);
+    let hours = delta;
+    return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+  }
+
+  const [countString, setCountString] = useState(getTimeString);
+
+  useEffect(() => {
+    const timer = setInterval(() => setCountString(getTimeString()), 1000);
+    return () => clearInterval(timer);
+  }, []);
+
+  return <h2>{text}{countString}</h2>
+}
+
 function App() {
   const [answers, setAnswers] = useState({main: '', clue: '', components: Array(5).fill('')});
   const [dictionary, setDictionary] = useState(new Set());
@@ -105,18 +127,16 @@ function App() {
           // .map(() => Array(4).fill('WOWZA')));
   const [stageByGame, setStageByGame] = useStickyState(Array(5).fill(''), 'stage');
 
-  // const [gameOverText, setGameOverText] = useState('');
+  const [gameOverText, setGameOverText] = useState('');
 
   useEffect(() => {
     if (answers.main === '') {
       return;
     }
     let prev = localStorage['prevAnswer'];
-    // console.log('prev:' + prev);
     if (prev === '') {
       localStorage['prevAnswer'] = answers.main;
     } else if (prev !== answers.main) {
-      // console.log('new:', prev, answers.main);
       setCurGameIdx(0);
       setGuessesByGame(Array(5).fill('').map(() => []));
       setStageByGame(Array(5).fill(''));
@@ -124,11 +144,19 @@ function App() {
     }
   },[answers, setCurGameIdx, setGuessesByGame, setStageByGame]);
 
-  // useEffect(() => {
-  //   if (answers.main === '') {
-  //     return;
-  //   }
-  // },[answers, guessesByGame]);
+  useEffect(() => {
+    let allDone = answers.main !== '' && guessesByGame.every((gameGuesses, gameIdx) =>
+        (gameGuesses.length === GAME_GUESS_LIMIT
+            || gameGuesses[gameGuesses.length - 1] === answers.components[gameIdx]));
+    if (allDone) {
+      // Did we win?
+      if (guessesByGame.every((gameGuesses, gameIdx) => gameGuesses[gameGuesses.length - 1] === answers.components[gameIdx])) {
+        setGameOverText('Chicken Dinner!');
+      } else {
+        setGameOverText('Try again tomorrow!');
+      }
+    }
+  }, [answers, guessesByGame]);
 
   const keyboardStatusByGame = useMemo(() => {
     return Array(answers.components.length).fill('').map((_, gameIdx) => {
@@ -171,7 +199,7 @@ function App() {
         .then(resp => resp.text())
         .then(txt => txt.split('\n').filter(line => line.length > 0))
         .then(lines => {
-          let day = Math.floor(Date.now() / 1000 / 60 / 60 / 24) % lines.length;
+          let day = Math.floor((Date.now() / 1000 / 60 / 60 - 8) / 24) % lines.length;
           console.log('day', day)
           let [main, clue, components] = JSON.parse(lines[day]);
           return {main, clue, components};
@@ -208,8 +236,6 @@ function App() {
 
   function onKey(event) {
     if (event.ctrlKey) return;
-    console.log(event.key)
-
     switch (event.key) {
       case 'Enter':
         stageLetter(curGameIdx, '>');
@@ -258,37 +284,67 @@ function App() {
     txtInput.focus();
   }, [curGameIdx, txtInput]);
 
-  return (
-      <div className="App" onKeyDown={onKey} tabIndex={-1} ref={(r) => txtInput = r}>
-        {/*<div className="PopupFrame">*/}
-        {/*  <div className="Popup">*/}
-        {/*    <h1>{gameOverText}</h1>*/}
-        {/*    <hr/>*/}
-        {/*  </div>*/}
-        {/*</div>*/}
-        <h1 className="Clue">{answers.clue}</h1>
-        <Row answer={answers.main === '' ? 'LOADING' : answers.main}
-             content={answers.main === '' ? 'LOADING' : topString}/>
-        <div className="PlayAreaScroll">
-          <div className="PlayArea">
-            {answers.components.map((ans, gameIdx) =>
-                <div key={gameIdx} className={curGameIdx === gameIdx ? 'curGame' : ''}
-                     onClick={() => setCurGameIdx(gameIdx)}>
-                  <h2>Letter {gameIdx+1}</h2>
-                  <Game answer={ans} guesses={guessesByGame[gameIdx] || []} stage={stageByGame[gameIdx]} />
-                </div>)}
-          </div>
-        </div>
-        {/*<input*/}
-        {/*       style={({'fontSize': '2em', width: '8ch'})}*/}
-        {/*       maxLength={5}*/}
-        {/*       value={stageByGame[curGameIdx]}*/}
-        {/*       onSubmit={() => stageLetter(curGameIdx, '>')}/>*/}
-        <Keyboard
-            disabled={answers.main === '' || curGameIdx < 0}
-            charStatuses={keyboardStatusByGame[curGameIdx]}
+  function getShareText() {
+    let green = '🟩';
+    let yellow = '🟨';
+    let black = '⬛';
+    let nums = ['0️⃣', '1️⃣', '2️⃣', '3️⃣', '4️⃣', '5️⃣'];
 
-            onFire={char => stageLetter(curGameIdx, char)}/>
+    let ret = [...topString].map(ch => ch == ' ' ? black : green).join('') + '\n';
+    ret += guessesByGame.map(guessed => nums[guessed.length]).join('');
+
+    return ret;
+  }
+
+  return (
+      <div>
+        {gameOverText === '' ? null :
+            <div className="PopupFrame"
+                 onClick={ev => ev.target.className === 'PopupFrame' ? setGameOverText('') : null}>
+              <div className="Popup" onClick={ev => ev.preventDefault()}>
+                <button className="Close" onClick={() => setGameOverText('')}>╳</button>
+                <h1>{gameOverText}</h1>
+                <hr/>
+                <CountdownTimer
+                    text="Next Puzzle: "
+                    target={new Date(1000 * 60 * 60 * 24 * (Math.ceil((Date.now() / 1000 / 60 / 60 / 24)) + 8 / 24))}/>
+                <hr/>
+                <button className="ShareButton" onClick={ev => {
+                  navigator.clipboard.writeText(getShareText());
+                  setGameOverText(cur => {
+                    setGameOverText('Copied!');
+                    setTimeout(() => setGameOverText(cur), 1000);
+                  });
+                  ev.preventDefault();
+                }} disabled={gameOverText === 'Copied!'}>Share
+                </button>
+              </div>
+            </div>}
+        <div className="App" onKeyDown={onKey} tabIndex={-1} ref={(r) => txtInput = r}>
+          <h1 className="Clue">{answers.clue}</h1>
+          <Row answer={answers.main === '' ? 'LOADING' : answers.main}
+               content={answers.main === '' ? 'LOADING' : topString}/>
+          <div className="PlayAreaScroll">
+            <div className="PlayArea">
+              {answers.components.map((ans, gameIdx) =>
+                  <div key={gameIdx} className={curGameIdx === gameIdx ? 'curGame' : ''}
+                       onClick={() => setCurGameIdx(gameIdx)}>
+                    <h2>Letter {gameIdx + 1}</h2>
+                    <Game answer={ans} guesses={guessesByGame[gameIdx] || []} stage={stageByGame[gameIdx]}/>
+                  </div>)}
+            </div>
+          </div>
+          {/*<input*/}
+          {/*       style={({'fontSize': '2em', width: '8ch'})}*/}
+          {/*       maxLength={5}*/}
+          {/*       value={stageByGame[curGameIdx]}*/}
+          {/*       onSubmit={() => stageLetter(curGameIdx, '>')}/>*/}
+          <Keyboard
+              disabled={answers.main === '' || curGameIdx < 0}
+              charStatuses={keyboardStatusByGame[curGameIdx]}
+
+              onFire={char => stageLetter(curGameIdx, char)}/>
+        </div>
       </div>
   );
 }

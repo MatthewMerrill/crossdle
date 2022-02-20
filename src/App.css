@@ -120,6 +120,7 @@ button.Tile:not([disabled]):hover {
 }
 
 .PopupFrame {
+  z-index: 200;
   position: absolute;
   left: 0;
   top: 0;
@@ -127,11 +128,45 @@ button.Tile:not([disabled]):hover {
   height: 100vh;
   display: flex;
   flex-flow: column nowrap;
+  background-color: rgba(20, 20, 20, 20%);
+  backdrop-filter: blur(20px);
 }
 
 .Popup {
-  background-color: #444;
+  position: relative;
+  min-width: 40ch;
+  background-color: #eee;
   margin: auto;
+  padding: 2em;
+  border: 1px solid black;
+}
+
+.Popup .Close {
+  position: absolute;
+  top: 0;
+  right: 0;
+  color: black;
+  margin: .1em;
+  background: none;
+  outline: none;
+  border: none;
+  font-size: 1.2em;
+}
+
+.App:not(:first-child) {
+  filter: blur(5px);
+}
+
+.ShareButton {
+  width: 100%;
+  height: 2em;
+  background: none;
+  color: black;
+  outline: 1px solid black;
+  border: 0;
+  font-weight: bolder;
+  font-size: 1.1em;
+  transition: background-color 90ms ease;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -145,6 +180,34 @@ button.Tile:not([disabled]):hover {
     color: aliceblue;
     outline: #999 1px solid;
     outline-width: 1px;
+  }
+
+  .Popup {
+    background-color: #111;
+    margin: auto;
+    padding: 2em;
+    border: 1px solid white;
+  }
+
+  .Popup .Close {
+    position: absolute;
+    top: 0;
+    right: 0;
+    color: white;
+  }
+
+  .ShareButton {
+    background-color: #444;
+    color: white;
+    outline: 1px solid white;
+  }
+
+  .ShareButton:hover {
+    background-color: #555;
+  }
+
+  .ShareButton:active {
+    background-color: #222;
   }
 }
 
