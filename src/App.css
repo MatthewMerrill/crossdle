@@ -1,0 +1,155 @@
+.App {
+  display: flex;
+  flex-flow: column nowrap;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+}
+
+.Clue {
+  color: black;
+  font-style: oblique;
+  font-weight: bold;
+  font-family: Serif;
+}
+
+.App-logo {
+  height: 40vmin;
+  pointer-events: none;
+}
+
+.PlayAreaScroll {
+  width: 100%;
+  overflow-x: auto;
+}
+
+.PlayArea {
+  display: flex;
+  flex-flow: row nowrap;
+  /*justify-content: center;*/
+  align-items: center;
+}
+
+.PlayArea > div {
+  display: flex;
+  flex-flow: column nowrap;
+  justify-content: center;
+  align-items: center;
+  margin: 3em .1em;
+}
+
+.PlayArea > div:first-child {
+  margin-left: auto;
+}
+
+.PlayArea > div:last-child {
+  margin-right: auto;
+}
+
+
+.PlayArea > div > button {
+  display: flex;
+  flex-flow: column nowrap;
+  justify-content: center;
+  align-items: center;
+  margin-top: -1em;
+}
+
+.PlayArea .curGame {
+  border-radius: 1em;
+  box-shadow: .2em .2em .5em .1em #888888;
+}
+
+.Game {
+  margin: 1em;
+}
+
+h2 {
+  margin-bottom: 0;
+}
+
+.Row {
+  display: flex;
+  flex-flow: row nowrap;
+  justify-content: center;
+  align-items: center;
+}
+
+.Tile {
+  display: inline-block;
+  width: 1.5em;
+  height: 1.5em;
+  font-size: 1.4em;
+  text-align: center;
+
+  margin: .1em;
+  padding: 0;
+  outline: #111 1px solid;
+  border: none;
+  border-radius: .2em;
+}
+
+.Tile.gray {
+  background-color: #555;
+  color: aliceblue;
+}
+
+.Tile.black {
+  background-color: #222;
+  color: aliceblue;
+}
+
+.Tile.green {
+  background-color: darkgreen;
+  color: aliceblue;
+  /*text-decoration: oblique;*/
+}
+
+.Tile.yellow {
+  background-color: darkgoldenrod;
+  color: aliceblue;
+  /*font-style: oblique;*/
+}
+
+button.Tile {
+  box-shadow: 0 0 0 0 #888888;
+  transition: box-shadow 300ms;
+}
+button.Tile:not([disabled]):hover {
+  box-shadow: .1em .1em .5em .2em #888888;
+}
+
+.PopupFrame {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 100vw;
+  height: 100vh;
+  display: flex;
+  flex-flow: column nowrap;
+}
+
+.Popup {
+  background-color: #444;
+  margin: auto;
+}
+
+@media (prefers-color-scheme: dark) {
+
+  .Clue, h1, h2, h3 {
+    color: white;
+  }
+
+  .Tile {
+    background-color: #000;
+    color: aliceblue;
+    outline: #999 1px solid;
+    outline-width: 1px;
+  }
+}
+
+@media (prefers-color-scheme: dark) {
+  html {
+    background-color: #111;
+  }
+}
