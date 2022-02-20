@@ -1,7 +1,4 @@
-import logo from './logo.svg';
 import './App.css';
-// import Tile from "./component/Tile";
-// import Row from "./component/Row";
 
 import React, {useEffect, useMemo, useState} from 'react';
 
@@ -82,35 +79,6 @@ function Keyboard({charStatuses={}, onFire, disabled}) {
   )
 }
 
-function selectAnswers(answers) {
-  return new Promise((resolve, reject) => {
-    function attempt() {
-      let main = answers[Math.floor(answers.length * Math.random())];
-      let slotRead = Array(5).fill(0);
-      let slotPick = Array(5).fill(null);
-      // console.log('trying main', main);
-
-      for (let slot = 0; slot < 5; slot++) {
-        for (let word of answers) {
-          if (word === main || slotPick.includes(word)) continue;
-          slotRead[slot] += 1;
-          if (word[slot] === main[slot] && Math.random() < (1.0 / slotRead[slot])) {
-            slotPick[slot] = word;
-          }
-        }
-        if (slotPick[slot] === null) {
-          // console.log('failed main', main);
-          setTimeout(attempt, 10);
-          return;
-        }
-      }
-      // console.log('confirmed main', main);
-      resolve({main, components: slotPick});
-    }
-    setTimeout(attempt, 1000);
-  });
-}
-
 // https://www.joshwcomeau.com/react/persisting-react-state-in-localstorage/
 function useStickyState(defaultValue, key) {
   const [value, setValue] = React.useState(() => {
@@ -137,7 +105,7 @@ function App() {
           // .map(() => Array(4).fill('WOWZA')));
   const [stageByGame, setStageByGame] = useStickyState(Array(5).fill(''), 'stage');
 
-  const [gameOverText, setGameOverText] = useState('');
+  // const [gameOverText, setGameOverText] = useState('');
 
   useEffect(() => {
     if (answers.main === '') {
