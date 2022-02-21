@@ -116,7 +116,7 @@ function CountdownTimer({text='', target}) {
 }
 
 function App() {
-  const [answers, setAnswers] = useState({main: '', clue: '', components: Array(5).fill('')});
+  const [answers, setAnswers] = useState({day: -1, main: '', clue: '', components: Array(5).fill('')});
   const [dictionary, setDictionary] = useState(new Set());
   const [curGameIdx, setCurGameIdx] = useStickyState(0, 'gameIdx');
   const [guessesByGame, setGuessesByGame] = useStickyState(
@@ -202,7 +202,7 @@ function App() {
           let day = Math.floor((Date.now() / 1000 / 60 / 60 - 8) / 24) % lines.length;
           console.log('day', day)
           let [main, clue, components] = JSON.parse(lines[day]);
-          return {main, clue, components};
+          return {main, clue, components, day};
         })
         // .then(selectAnswers)
         .then(setAnswers);
@@ -289,9 +289,14 @@ function App() {
     let yellow = '🟨';
     let black = '⬛';
     let nums = ['0️⃣', '1️⃣', '2️⃣', '3️⃣', '4️⃣', '5️⃣'];
+    let x = ['❌']
 
-    let ret = [...topString].map(ch => ch == ' ' ? black : green).join('') + '\n';
-    ret += guessesByGame.map(guessed => nums[guessed.length]).join('');
+    let ret = `crossdle.mattmerr.com Day ${answers.day - 872}\n`;
+    ret += [...topString].map(ch => ch == ' ' ? black : green).join('') + '\n';
+    ret += guessesByGame.map((guessed, gameIdx) =>
+        (guessed.length === 0 || guessed[guessed.length - 1] !== answers.components[gameIdx])
+            ? x
+            : nums[guessed.length]).join('');
 
     return ret;
   }
